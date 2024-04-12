@@ -2,20 +2,32 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
-	/*
-		common gotcha for web developers is that it (http.DetectContentType)
-		can’t distinguish JSON from plain text.
-	*/
-	// w.Header().Set("Content-Type", "application/json")
-	// w.Write([]byte(`{"name":"Alex"}`))
-
-	w.Header().Add("Server", "Go 1.22.1")
-	w.Write([]byte("Display the homepage..."))
+	// Use the template.ParseFiles() function to read the template file into a
+	// template set. If there's an error, we log the detailed error message, use
+	// the http.Error() function to send an Internal Server Error response to the
+	// user, and then return from the handler so no subsequent code is executed.
+	ts, err := template.ParseFiles("./ui/html/pages/home.tmpl")
+	if err != nil {
+		log.Print(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	// Then we use the Execute() method on the template set to write the
+	// template content as the response body. The last parameter to Execute()
+	// represents any dynamic data that we want to pass in, which for now we'll
+	// leave as nil.
+	err = ts.Execute(w, nil)
+	if err != nil {
+		log.Print(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }
 
 func snippetView(w http.ResponseWriter, r *http.Request) {
